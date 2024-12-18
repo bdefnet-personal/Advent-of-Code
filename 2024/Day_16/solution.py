@@ -17,56 +17,9 @@
 '''
 import heapq
 
-best_score = -1
-
-def traverse_maze(maze, pos, facing, goal, visited, score):
-    max_row = len(maze)
-    max_col = len(maze[0])
-
-    global best_score
-
-    if best_score >= 0 and score > best_score:
-        return
-
-    if (pos, facing) in visited:
-        if visited[(pos, facing)] < score:
-            return
-    
-    if pos == goal:
-        if best_score == -1 or score < best_score:
-            best_score = score
-            return
-
-    visited[(pos, facing)] = score
-
-    #move forward
-    if facing == "NORTH":
-        if pos[0] > 0 and maze[pos[0] - 1][pos[1]] != "#":
-            traverse_maze(maze, (pos[0] - 1, pos[1]), facing, goal, visited, score + 1)
-    elif facing == "SOUTH":
-        if pos[0] < max_row - 1 and maze[pos[0] + 1][pos[1]] != "#":
-            traverse_maze(maze, (pos[0] + 1, pos[1]), facing, goal, visited, score + 1)
-    elif facing == "WEST":
-        if pos[1] > 0 and maze[pos[0]][pos[1] - 1] != "#":
-            traverse_maze(maze, (pos[0], pos[1] - 1), facing, goal, visited, score + 1)
-    elif facing == "EAST":
-        if pos[1] < max_col - 1 and maze[pos[0]][pos[1] + 1] != "#":
-            traverse_maze(maze, (pos[0], pos[1] + 1), facing, goal, visited, score + 1)
-
-    #rotate
-    if facing in ["NORTH", "SOUTH"]:
-        traverse_maze(maze, pos, "EAST", goal, visited, score + 1000)
-        traverse_maze(maze, pos, "WEST", goal, visited, score + 1000)
-    if facing in ["EAST", "WEST"]:
-        traverse_maze(maze, pos, "NORTH", goal, visited, score + 1000)
-        traverse_maze(maze, pos, "SOUTH", goal, visited, score + 1000)
-
-all_paths = set()
-best_score = -1
-
-def traverse_maze2(maze, goal, visited, candidates):
-    global best_score
-    global all_paths
+def traverse_maze(maze, goal, visited, candidates):
+    best_score = -1
+    all_paths = set()
 
     max_row = len(maze)
     max_col = len(maze[0])
@@ -118,6 +71,7 @@ def traverse_maze2(maze, goal, visited, candidates):
             heapq.heappush(candidates, (score + 1000, (pos, "NORTH", set(path))))
             heapq.heappush(candidates, (score + 1000, (pos, "SOUTH", set(path))))
 
+    return best_score, all_paths
 
 with open('input.txt', 'r') as f:
     content = f.read()
@@ -138,7 +92,7 @@ with open('input.txt', 'r') as f:
     visited = {}
     candidates = []
     heapq.heappush(candidates, (0, (reindeer_position, reindeer_orientation, set())))
-    traverse_maze2(maze, end_position, visited, candidates)
+    best_score, all_paths = traverse_maze(maze, end_position, visited, candidates)
 
     print(f"Part 1 Answer: {best_score}")
     print(f"Part 2 Answer: {len(all_paths)}")
